@@ -1,0 +1,70 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family:
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    Roboto,
+    'Helvetica Neue',
+    Arial,
+    sans-serif;
+}
+
+body {
+  background: var(--el-bg-color);
+  color: var(--el-text-color-primary);
+}
+
+html.theme-transition::view-transition-old(root),
+html.theme-transition::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+html.theme-transition::view-transition-old(root) {
+  z-index: 1;
+}
+
+html.theme-transition::view-transition-new(root) {
+  z-index: 9999;
+}
+
+.tool-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  height: calc(100vh - 120px);
+}
+
+.tool-page__header h2 {
+  margin: 0 0 4px;
+  font-size: 20px;
+}
+
+.tool-page__header p {
+  margin: 0;
+  color: var(--el-text-color-secondary);
+  font-size: 14px;
+}
+
+.tool-page__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.tool-page__content {
+  flex: 1;
+  min-height: 0;
+}
