@@ -6,6 +6,7 @@ import {
   DataAnalysis,
   Document,
   Grid,
+  Location,
   Picture,
 } from '@element-plus/icons-vue'
 import { getCategories, getTools, getToolById } from '@/core/registry'
@@ -20,6 +21,7 @@ const categoryIcons: Record<string, typeof Grid> = {
   color: Brush,
   formatter: Document,
   barcode: DataAnalysis,
+  coordinate: Location,
 }
 
 const categories = computed(() =>
