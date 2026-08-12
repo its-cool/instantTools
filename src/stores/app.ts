@@ -28,11 +28,16 @@ export const useAppStore = defineStore('app', () => {
   }
 
   function toggleTheme(origin?: { x: number; y: number }) {
-    withThemeTransition(() => {
-      isDark.value = !isDark.value
-      applyTheme()
-      void setItem(THEME_KEY, isDark.value ? 'dark' : 'light')
-    }, origin)
+    const nextDark = !isDark.value
+    withThemeTransition(
+      () => {
+        isDark.value = nextDark
+        applyTheme()
+        void setItem(THEME_KEY, isDark.value ? 'dark' : 'light')
+      },
+      origin,
+      nextDark,
+    )
   }
 
   function applyTheme() {

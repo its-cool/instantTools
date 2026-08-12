@@ -90,22 +90,24 @@ function onToggleTheme(event: MouseEvent) {
 
     <el-container>
       <el-header class="app-layout__header">
-        <div class="app-layout__header-left">
-          <el-button text @click="appStore.toggleSidebar()">
-            <el-icon>
-              <Fold v-if="!appStore.sidebarCollapsed" />
-              <Expand v-else />
-            </el-icon>
-          </el-button>
-          <ToolSearch v-model="searchQuery" />
-        </div>
-        <div class="app-layout__header-right">
-          <el-button text circle @click="onToggleTheme">
-            <el-icon>
-              <Moon v-if="!appStore.isDark" />
-              <Sunny v-else />
-            </el-icon>
-          </el-button>
+        <div class="app-layout__header-inner">
+          <div class="app-layout__header-left">
+            <el-button text @click="appStore.toggleSidebar()">
+              <el-icon>
+                <Fold v-if="!appStore.sidebarCollapsed" />
+                <Expand v-else />
+              </el-icon>
+            </el-button>
+            <ToolSearch v-model="searchQuery" />
+          </div>
+          <div class="app-layout__header-right">
+            <el-button text circle @click="onToggleTheme">
+              <el-icon>
+                <Moon v-if="!appStore.isDark" />
+                <Sunny v-else />
+              </el-icon>
+            </el-button>
+          </div>
         </div>
       </el-header>
 
@@ -122,8 +124,9 @@ function onToggleTheme(event: MouseEvent) {
 }
 
 .app-layout__aside {
-  border-right: 1px solid var(--el-border-color);
+  position: relative;
   background: var(--el-bg-color);
+  border-right: 1px solid var(--el-border-color);
   transition: width 0.2s;
   overflow: hidden;
 }
@@ -148,14 +151,22 @@ function onToggleTheme(event: MouseEvent) {
 
 .app-layout__menu {
   border-right: none;
+  background: transparent;
 }
 
 .app-layout__header {
+  position: relative;
+  height: 56px;
+  background: var(--el-bg-color);
+  border-bottom: 1px solid var(--el-border-color);
+}
+
+.app-layout__header-inner {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid var(--el-border-color);
-  background: var(--el-bg-color);
+  height: 100%;
+  padding: 0 16px;
 }
 
 .app-layout__header-left {

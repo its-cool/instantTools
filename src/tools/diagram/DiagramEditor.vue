@@ -13,6 +13,7 @@ import type { DiagramType } from './types'
 import { getStorageKey } from './types'
 import {
   addMindmapChild,
+  addMindmapList,
   addMindmapSibling,
   bindMindmapGraph,
   getMindmapRoot,
@@ -138,6 +139,20 @@ function handleAddChild() {
   }
 }
 
+function handleAddList() {
+  if (!isMindmap.value || !graphRef.value) {
+    ElMessage.info('列表功能适用于思维导图')
+    return
+  }
+  const target = getTargetNode()
+  if (!target) return
+  const list = addMindmapList(graphRef.value, target.id)
+  if (list) {
+    graphRef.value.cleanSelection()
+    graphRef.value.select(list)
+  }
+}
+
 function handleAddSibling() {
   if (!graphRef.value) return
   const selected = graphRef.value.getSelectedCells()[0]
@@ -199,30 +214,17 @@ onBeforeUnmount(() => {
       <div>
         <h2>{{ template.label }}</h2>
         <p v-if="isMindmap">
-          Tab 子节点 · Enter 同级 · F2/双击编辑 · 点击节点右上角 −/+ 折叠展开 · Delete 删除
+          Tab 子节点 · Enter 同级 · F2/双击编辑 · 点击节点右上角 −/+ 折叠展开 · Delete 删除 · 列表节点每行一个条目
         </p>
         <p v-else>可视化拖拽编辑，支持撤销重做、导入导出与本地自动保存</p>
       </div>
-      <Toolbar
-        :graph="graphRef"
-        :can-undo="canUndo"
-        :can-redo="canRedo"
-        :is-mindmap="isMindmap"
-        @undo="handleUndo"
-        @redo="handleRedo"
-        @import="handleImport"
-        @add-child="handleAddChild"
-        @add-sibling="handleAddSibling"
-        @relayout="handleRelayout"
-      />
+      <Toolbar :graph="graphRef" :can-undo="canUndo" :can-redo="canRedo" :is-mindmap="isMindmap" @undo="handleUndo"
+        @redo="handleRedo" @import="handleImport" @add-child="handleAddChild" @add-list="handleAddList"
+        @add-sibling="handleAddSibling" @relayout="handleRelayout" />
     </div>
 
     <div class="diagram-editor__body">
-      <ShapePanel
-        :graph="graphRef"
-        :shapes="template.shapes"
-        :diagram-type="diagramType"
-      />
+      <ShapePanel :graph="graphRef" :shapes="template.shapes" :diagram-type="diagramType" />
       <div class="diagram-editor__canvas-wrap">
         <div ref="containerRef" class="diagram-editor__canvas" />
         <div ref="minimapRef" class="diagram-editor__minimap" />
@@ -277,6 +279,26 @@ onBeforeUnmount(() => {
   width: 100%;
   height: 100%;
   background: var(--el-fill-color-blank);
+
+  :deep(.x6-node) {
+    &.has-tool-editing {
+
+      .x6-widget-selection-box,
+      .x6-node-selected-outline,
+      .x6-node-selection {
+        display: none !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
+      }
+    }
+  }
+
+  :deep(.x6-tool-editor-textarea) {
+    resize: none;
+    line-height: 20px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(31, 111, 235, 0.15);
+  }
 }
 
 .diagram-editor__minimap {

@@ -33,20 +33,21 @@ export function createGraphInstance(options: UseGraphOptions): Graph {
     },
     panning: {
       enabled: true,
-      eventTypes: ['leftMouseDown'],
+      eventTypes: ['leftMouseDown', 'rightMouseDown'],
     },
     mousewheel: {
       enabled: true,
-      modifiers: ['ctrl', 'meta'],
       factor: 1.1,
       maxScale: 3,
       minScale: 0.3,
     },
     connecting: {
-      router: 'orth',
+      router: { name: 'manhattan', args: { padding: 10 } },
       connector: { name: 'rounded' },
       connectionPoint: 'boundary',
       allowBlank: false,
+      allowNode: false,
+      allowEdge: false,
       snap: { radius: 24 },
       createEdge() {
         return new Shape.Edge({
@@ -61,13 +62,16 @@ export function createGraphInstance(options: UseGraphOptions): Graph {
         })
       },
     },
+    interacting: {
+      edgeLabelMovable: false,
+    },
   })
 
   graph.use(
     new Selection({
       enabled: true,
       multiple: true,
-      rubberband: true,
+      rubberband: false,
       showNodeSelectionBox: true,
       showEdgeSelectionBox: true,
     }),

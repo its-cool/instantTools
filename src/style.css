@@ -39,6 +39,55 @@ html.theme-transition::view-transition-new(root) {
   z-index: 9999;
 }
 
+/* 白→黑：新主题从按钮处向外扩张覆盖全屏 */
+html.theme-transition--expand::view-transition-new(root) {
+  animation: theme-reveal-expand 450ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+/* 黑→白：旧主题从全屏向按钮处收缩消失 */
+html.theme-transition--shrink::view-transition-old(root) {
+  z-index: 9999;
+  animation: theme-reveal-shrink 450ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+html.theme-transition--shrink::view-transition-new(root) {
+  z-index: 1;
+}
+
+/* CSS Fallback 覆盖层（夸克等不支持 Web Animations API 的浏览器） */
+.theme-reveal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  pointer-events: none;
+}
+
+.theme-reveal-overlay--expand {
+  animation: theme-reveal-expand 500ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.theme-reveal-overlay--shrink {
+  animation: theme-reveal-shrink 500ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes theme-reveal-expand {
+  from {
+    clip-path: circle(0px at var(--reveal-x) var(--reveal-y));
+  }
+  to {
+    clip-path: circle(var(--reveal-radius) at var(--reveal-x) var(--reveal-y));
+  }
+}
+
+@keyframes theme-reveal-shrink {
+  from {
+    clip-path: circle(var(--reveal-radius) at var(--reveal-x) var(--reveal-y));
+  }
+  to {
+    clip-path: circle(0px at var(--reveal-x) var(--reveal-y));
+  }
+}
+
 .tool-page {
   display: flex;
   flex-direction: column;

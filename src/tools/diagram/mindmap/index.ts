@@ -3,12 +3,13 @@ import type { Cell, Node } from '@antv/x6'
 import type { DiagramTemplate } from '../types'
 
 const MINDMAP_SHAPE = 'mindmap-node'
+const LIST_SHAPE = 'mindmap-list'
 const H_GAP = 80
 const V_GAP = 24
 const PADDING = 60
 
 const LEVEL_COLORS = [
-  { fill: '#1F6FEB', stroke: '#1558C0', color: '#ffffff', fontSize: 16 },
+  { fill: { type: 'linearGradient', stops: [{ offset: 0, color: '#4F8EFC' }, { offset: 1, color: '#1F6FEB' }] }, stroke: '#1558C0', color: '#ffffff', fontSize: 16 },
   { fill: '#EFF4FF', stroke: '#5F95FF', color: '#262626', fontSize: 14 },
   { fill: '#F6FFED', stroke: '#73D13D', color: '#262626', fontSize: 13 },
   { fill: '#FFF7E6', stroke: '#FFA940', color: '#262626', fontSize: 13 },
@@ -19,9 +20,13 @@ function getStyle(level: number) {
 }
 
 const PORTS = [
+  { id: 'top', group: 'top' },
   { id: 'right', group: 'right' },
+  { id: 'bottom', group: 'bottom' },
   { id: 'left', group: 'left' },
 ]
+
+const portAttrs = { circle: { r: 0, magnet: true, stroke: 'transparent', fill: 'transparent' } }
 
 Graph.registerNode(MINDMAP_SHAPE, {
   inherit: 'rect',
@@ -81,21 +86,54 @@ Graph.registerNode(MINDMAP_SHAPE, {
   },
   ports: {
     groups: {
-      right: {
-        position: 'right',
-        attrs: { circle: { r: 0, magnet: true, stroke: 'transparent', fill: 'transparent' } },
-      },
-      left: {
-        position: 'left',
-        attrs: { circle: { r: 0, magnet: true, stroke: 'transparent', fill: 'transparent' } },
-      },
+      top: { position: 'top', attrs: portAttrs },
+      right: { position: 'right', attrs: portAttrs },
+      bottom: { position: 'bottom', attrs: portAttrs },
+      left: { position: 'left', attrs: portAttrs },
+    },
+    items: PORTS,
+  },
+})
+
+Graph.registerNode(LIST_SHAPE, {
+  inherit: 'rect',
+  width: 140,
+  height: 80,
+  markup: [
+    { tagName: 'rect', selector: 'body' },
+    { tagName: 'text', selector: 'label' },
+  ],
+  attrs: {
+    body: {
+      strokeWidth: 1,
+      stroke: '#D9D9D9',
+      fill: '#FAFAFA',
+      rx: 4,
+      ry: 4,
+    },
+    label: {
+      fontSize: 13,
+      fill: '#595959',
+      textAnchor: 'start',
+      textVerticalAnchor: 'top',
+      refX: 12,
+      refY: 10,
+      lineHeight: 20,
+    },
+  },
+  ports: {
+    groups: {
+      top: { position: 'top', attrs: portAttrs },
+      right: { position: 'right', attrs: portAttrs },
+      bottom: { position: 'bottom', attrs: portAttrs },
+      left: { position: 'left', attrs: portAttrs },
     },
     items: PORTS,
   },
 })
 
 export function isMindmapNode(cell: Cell): cell is Node {
-  return cell.isNode() && cell.shape === MINDMAP_SHAPE
+  return cell.isNode() && (cell.shape === MINDMAP_SHAPE || cell.shape === LIST_SHAPE)
 }
 
 export function getMindmapRoot(graph: Graph): Node | null {
@@ -131,10 +169,25 @@ function isCollapsed(node: Node): boolean {
 }
 
 function fitSize(node: Node) {
+  if (node.shape === LIST_SHAPE) {
+    fitListSize(node)
+    return
+  }
   const label = (node.attr('label/text') as string) ?? ''
   const style = getStyle(getLevel(node))
   const width = Math.min(280, Math.max(72, label.length * style.fontSize * 0.65 + 32))
   const height = Math.max(36, style.fontSize + 20)
+  node.resize(width, height)
+}
+
+function fitListSize(node: Node) {
+  const raw = (node.attr('label/text') as string) ?? ''
+  const lines = raw.split('\n')
+  const maxLen = Math.max(...lines.map((l) => l.length), 1)
+  const fontSize = 13
+  const lineHeight = 20
+  const width = Math.min(280, Math.max(100, maxLen * fontSize * 0.65 + 28))
+  const height = Math.max(40, lines.length * lineHeight + 16)
   node.resize(width, height)
 }
 
@@ -256,14 +309,46 @@ export function addMindmapChild(graph: Graph, parentId: string): Node | null {
   applyStyle(child, getLevel(parent) + 1)
 
   graph.addEdge({
-    source: { cell: parent.id, port: 'right' },
-    target: { cell: child.id, port: 'left' },
+    source: { cell: parent.id },
+    target: { cell: child.id },
+    router: { name: 'manhattan', args: { padding: 10 } },
     connector: { name: 'rounded' },
     attrs: { line: { stroke: '#A2B1C3', strokeWidth: 2, targetMarker: null } },
   })
 
   relayoutMindmap(graph)
   return child
+}
+
+export function addMindmapList(graph: Graph, parentId: string): Node | null {
+  const parent = graph.getCellById(parentId)
+  if (!parent?.isNode()) return null
+
+  if (isCollapsed(parent)) {
+    parent.setData({ ...parent.getData(), collapsed: false })
+    setSubtreeVisible(graph, parent, true)
+  }
+
+  const list = graph.addNode({
+    shape: LIST_SHAPE,
+    label: '列表项 1\n列表项 2\n列表项 3',
+    ports: PORTS,
+    data: { level: getLevel(parent) + 1, collapsed: false, isList: true },
+  })
+  list.setAttrByPath('label/text', '• 列表项 1\n• 列表项 2\n• 列表项 3')
+  fitListSize(list)
+  attachEditor(list)
+
+  graph.addEdge({
+    source: { cell: parent.id },
+    target: { cell: list.id },
+    router: { name: 'manhattan', args: { padding: 10 } },
+    connector: { name: 'rounded' },
+    attrs: { line: { stroke: '#A2B1C3', strokeWidth: 2, targetMarker: null } },
+  })
+
+  relayoutMindmap(graph)
+  return list
 }
 
 export function addMindmapSibling(graph: Graph, nodeId: string): Node | null {
@@ -282,8 +367,9 @@ export function addMindmapSibling(graph: Graph, nodeId: string): Node | null {
   applyStyle(sibling, getLevel(node))
 
   graph.addEdge({
-    source: { cell: parent.id, port: 'right' },
-    target: { cell: sibling.id, port: 'left' },
+    source: { cell: parent.id },
+    target: { cell: sibling.id },
+    router: { name: 'manhattan', args: { padding: 10 } },
     connector: { name: 'rounded' },
     attrs: { line: { stroke: '#A2B1C3', strokeWidth: 2, targetMarker: null } },
   })
@@ -325,19 +411,41 @@ function createEditorTool() {
   return {
     name: 'node-editor',
     args: {
+      event: 'dblclick',
+      contentCell: 'body',
       attrs: {
         fontSize: 14,
-        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", Roboto, sans-serif',
         color: '#262626',
-        backgroundColor: 'rgba(255,255,255,0.95)',
+        backgroundColor: 'rgba(255,255,255,0.98)',
+        border: '2px solid #1F6FEB',
+        borderRadius: 8,
+        outline: 'none',
+        padding: '0 8px',
+        textAlign: 'center',
       },
-      getText: 'label/text',
+      getText: ({ cell }: { cell: Cell }) => {
+        if (!cell.isNode()) return ''
+        if (cell.shape === LIST_SHAPE) {
+          const raw = (cell.attr('label/text') as string) ?? ''
+          return raw.replace(/^• /gm, '')
+        }
+        return (cell.attr('label/text') as string) ?? ''
+      },
       setText({ cell, value }: { cell: Cell; value: string | null }) {
         if (!cell.isNode()) return
-        const text = value?.trim() || '节点'
-        cell.setAttrByPath('label/text', text)
-        cell.prop('label', text)
-        fitSize(cell)
+        if (cell.shape === LIST_SHAPE) {
+          const lines = (value || '').split('\n').filter((l) => l.trim())
+          const text = lines.length ? lines.map((l) => `• ${l.trim()}`).join('\n') : '• 列表项'
+          cell.setAttrByPath('label/text', text)
+          cell.prop('label', text)
+          fitListSize(cell)
+        } else {
+          const text = value?.trim() || '节点'
+          cell.setAttrByPath('label/text', text)
+          cell.prop('label', text)
+          fitSize(cell)
+        }
       },
     },
   }
@@ -360,7 +468,11 @@ export function restoreMindmap(graph: Graph) {
 
   const walk = (node: Node, level: number) => {
     node.setData({ ...node.getData(), level })
-    applyStyle(node, level)
+    if (node.shape !== LIST_SHAPE) {
+      applyStyle(node, level)
+    } else {
+      fitListSize(node)
+    }
     attachEditor(node)
     getMindmapChildren(graph, node).forEach((child) => walk(child, level + 1))
   }
@@ -471,23 +583,24 @@ export const mindmapTemplate: DiagramTemplate = {
     applyStyle(grandchild, 2)
 
     const edgeStyle = {
+      router: { name: 'manhattan', args: { padding: 10 } },
       connector: { name: 'rounded' },
       attrs: { line: { stroke: '#A2B1C3', strokeWidth: 2, targetMarker: null } },
     }
 
     graph.addEdge({
-      source: { cell: root.id, port: 'right' },
-      target: { cell: child1.id, port: 'left' },
+      source: { cell: root.id },
+      target: { cell: child1.id },
       ...edgeStyle,
     })
     graph.addEdge({
-      source: { cell: root.id, port: 'right' },
-      target: { cell: child2.id, port: 'left' },
+      source: { cell: root.id },
+      target: { cell: child2.id },
       ...edgeStyle,
     })
     graph.addEdge({
-      source: { cell: child1.id, port: 'right' },
-      target: { cell: grandchild.id, port: 'left' },
+      source: { cell: child1.id },
+      target: { cell: grandchild.id },
       ...edgeStyle,
     })
 

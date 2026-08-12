@@ -1,5 +1,19 @@
 <script setup lang="ts">
-import { ArrowDown } from '@element-plus/icons-vue'
+import {
+  ArrowDown,
+  RefreshLeft,
+  RefreshRight,
+  ZoomIn,
+  ZoomOut,
+  FullScreen,
+  Aim,
+  Plus,
+  DocumentCopy,
+  Grid,
+  Download,
+  Upload,
+  List,
+} from '@element-plus/icons-vue'
 import type { Graph } from '@antv/x6'
 import { centerGraph, fitGraph, zoomGraph } from '../hooks/useGraph'
 import { exportJson, exportPng, exportSvg } from '../utils/export'
@@ -16,6 +30,7 @@ const emit = defineEmits<{
   redo: []
   import: []
   addChild: []
+  addList: []
   addSibling: []
   relayout: []
 }>()
@@ -52,30 +67,104 @@ function handleExportSvg() {
 <template>
   <div class="diagram-toolbar">
     <el-button-group>
-      <el-button :disabled="!canUndo" @click="emit('undo')">撤销</el-button>
-      <el-button :disabled="!canRedo" @click="emit('redo')">重做</el-button>
+      <el-tooltip content="撤销" placement="bottom">
+        <el-button :disabled="!canUndo" @click="emit('undo')">
+          <el-icon>
+            <RefreshLeft />
+          </el-icon>
+        </el-button>
+      </el-tooltip>
+      <el-tooltip content="重做" placement="bottom">
+        <el-button :disabled="!canRedo" @click="emit('redo')">
+          <el-icon>
+            <RefreshRight />
+          </el-icon>
+        </el-button>
+      </el-tooltip>
     </el-button-group>
 
     <el-button-group>
-      <el-button @click="handleZoomIn">放大</el-button>
-      <el-button @click="handleZoomOut">缩小</el-button>
-      <el-button @click="handleFit">适应</el-button>
-      <el-button @click="handleCenter">居中</el-button>
+      <el-tooltip content="放大" placement="bottom">
+        <el-button @click="handleZoomIn">
+          <el-icon>
+            <ZoomIn />
+          </el-icon>
+        </el-button>
+      </el-tooltip>
+      <el-tooltip content="缩小" placement="bottom">
+        <el-button @click="handleZoomOut">
+          <el-icon>
+            <ZoomOut />
+          </el-icon>
+        </el-button>
+      </el-tooltip>
+      <el-tooltip content="适应画布" placement="bottom">
+        <el-button @click="handleFit">
+          <el-icon>
+            <FullScreen />
+          </el-icon>
+        </el-button>
+      </el-tooltip>
+      <el-tooltip content="居中" placement="bottom">
+        <el-button @click="handleCenter">
+          <el-icon>
+            <Aim />
+          </el-icon>
+        </el-button>
+      </el-tooltip>
     </el-button-group>
 
     <template v-if="isMindmap">
       <el-button-group>
-        <el-button @click="emit('addChild')">子节点</el-button>
-        <el-button @click="emit('addSibling')">同级节点</el-button>
-        <el-button @click="emit('relayout')">整理布局</el-button>
+        <el-tooltip content="添加子节点" placement="bottom">
+          <el-button @click="emit('addChild')">
+            <el-icon>
+              <Plus />
+            </el-icon>
+          </el-button>
+        </el-tooltip>
+        <el-tooltip content="添加列表" placement="bottom">
+          <el-button @click="emit('addList')">
+            <el-icon>
+              <List />
+            </el-icon>
+          </el-button>
+        </el-tooltip>
+        <el-tooltip content="添加同级节点" placement="bottom">
+          <el-button @click="emit('addSibling')">
+            <el-icon>
+              <DocumentCopy />
+            </el-icon>
+          </el-button>
+        </el-tooltip>
+        <el-tooltip content="整理布局" placement="bottom">
+          <el-button @click="emit('relayout')">
+            <el-icon>
+              <Grid />
+            </el-icon>
+          </el-button>
+        </el-tooltip>
       </el-button-group>
     </template>
-    <el-button v-else @click="emit('addChild')">添加子节点</el-button>
+    <el-tooltip v-else content="添加子节点" placement="bottom">
+      <el-button @click="emit('addChild')">
+        <el-icon>
+          <Plus />
+        </el-icon>
+      </el-button>
+    </el-tooltip>
 
     <el-dropdown>
-      <el-button type="primary">
-        导出 <el-icon class="el-icon--right"><ArrowDown /></el-icon>
-      </el-button>
+      <el-tooltip content="导出" placement="bottom">
+        <el-button type="primary">
+          <el-icon>
+            <Download />
+          </el-icon>
+          <el-icon class="el-icon--right">
+            <ArrowDown />
+          </el-icon>
+        </el-button>
+      </el-tooltip>
       <template #dropdown>
         <el-dropdown-menu>
           <el-dropdown-item @click="handleExportJson">JSON</el-dropdown-item>
@@ -85,7 +174,13 @@ function handleExportSvg() {
       </template>
     </el-dropdown>
 
-    <el-button @click="emit('import')">导入 JSON</el-button>
+    <el-tooltip content="导入 JSON" placement="bottom">
+      <el-button @click="emit('import')">
+        <el-icon>
+          <Upload />
+        </el-icon>
+      </el-button>
+    </el-tooltip>
   </div>
 </template>
 
