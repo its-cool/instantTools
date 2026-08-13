@@ -7,8 +7,6 @@ export interface RemoteVisitRecord {
   tool_id: string
   ts: number
   duration: number
-  device_type?: string
-  browser?: string
   created_at?: string
 }
 

@@ -273,19 +273,6 @@ function maskSession(sid: string): string {
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="设备" width="150">
-          <template #default="{ row }">
-            <el-tag
-              size="small"
-              :type="row.deviceTypes.includes('mobile') ? 'warning' : 'info'"
-            >
-              {{ row.deviceTypes.includes('mobile') ? '移动端' : 'PC' }}
-            </el-tag>
-            <span v-if="row.browsers.length" class="control__browser">
-              {{ row.browsers.join(' / ') }}
-            </span>
-          </template>
-        </el-table-column>
         <el-table-column label="总时长" width="110" sortable :sort-by="'totalDuration'">
           <template #default="{ row }">
             {{ formatDuration(row.totalDuration) }}
@@ -423,24 +410,44 @@ function maskSession(sid: string): string {
   color: var(--el-text-color-secondary);
 }
 
-.control__browser {
-  margin-left: 6px;
-  font-size: 12px;
-  color: var(--el-text-color-secondary);
-}
-
 .control__tool-tag {
   margin: 2px 4px 2px 0;
 }
 
-.control__linechart {
-  width: 100%;
-  height: 280px;
+.control__chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  height: 160px;
+  padding: 12px;
   border: 1px solid var(--el-border-color);
   border-radius: 8px;
   background: var(--el-bg-color);
-  padding: 8px;
-  box-sizing: border-box;
+  overflow-x: auto;
+}
+
+.control__chart-bar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 36px;
+  height: 100%;
+  gap: 4px;
+}
+
+.control__chart-fill {
+  width: 24px;
+  min-height: 2px;
+  border-radius: 4px 4px 0 0;
+  background: var(--el-color-primary);
+  transition: height 0.3s;
+}
+
+.control__chart-label {
+  font-size: 11px;
+  color: var(--el-text-color-secondary);
+  white-space: nowrap;
 }
 
 .control__empty {

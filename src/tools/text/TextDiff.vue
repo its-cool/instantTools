@@ -1,9 +1,26 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount, watch, shallowRef } from 'vue'
 import * as monaco from 'monaco-editor'
+import EditorWorker from 'monaco-editor/editor/editor.worker?worker'
+import JsonWorker from 'monaco-editor/language/json/json.worker?worker'
+import CssWorker from 'monaco-editor/language/css/css.worker?worker'
+import HtmlWorker from 'monaco-editor/language/html/html.worker?worker'
+import TsWorker from 'monaco-editor/language/typescript/ts.worker?worker'
 import { useAppStore } from '@/stores/app'
 import { downloadText, readFromClipboard } from '@/shared/utils/download'
 import { ElMessage } from 'element-plus'
+
+// 手动配置 Monaco worker，使用 Vite ?worker 导入，
+// 使 worker 输出到 assets 目录并跟随 base，保证子路径部署下可加载。
+self.MonacoEnvironment = {
+  getWorker(_: unknown, label: string) {
+    if (label === 'json') return new JsonWorker()
+    if (label === 'css' || label === 'scss' || label === 'less') return new CssWorker()
+    if (label === 'html' || label === 'handlebars' || label === 'razor') return new HtmlWorker()
+    if (label === 'typescript' || label === 'javascript') return new TsWorker()
+    return new EditorWorker()
+  },
+}
 
 const appStore = useAppStore()
 

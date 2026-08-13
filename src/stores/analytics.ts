@@ -15,8 +15,6 @@ export interface VisitRecord {
   ts: number
   duration: number
   sessionId: string
-  deviceType: 'pc' | 'mobile'
-  browser: string
 }
 
 /** 每日汇总 */
@@ -43,8 +41,6 @@ export interface VisitorStats {
   visitCount: number
   toolsUsed: string[]
   toolCount: number
-  deviceTypes: string[]
-  browsers: string[]
   totalDuration: number
   firstVisit: number
   lastVisit: number
@@ -52,20 +48,6 @@ export interface VisitorStats {
 
 const ANALYTICS_KEY = 'analytics-data'
 const SESSION_KEY = 'analytics-session'
-
-/** 检测设备类型与浏览器类型 */
-function detectEnvironment(): { deviceType: 'pc' | 'mobile'; browser: string } {
-  const ua = typeof navigator !== 'undefined' ? navigator.userAgent : ''
-  const isMobile = /Android|iPhone|iPad|iPod|Mobile|Windows Phone/i.test(ua)
-  let browser = '未知'
-  if (/Edg\//.test(ua)) browser = 'Edge'
-  else if (/OPR\//.test(ua)) browser = 'Opera'
-  else if (/Chrome\//.test(ua)) browser = 'Chrome'
-  else if (/Firefox\//.test(ua)) browser = 'Firefox'
-  else if (/Safari\//.test(ua)) browser = 'Safari'
-  else if (/MSIE|Trident/.test(ua)) browser = 'IE'
-  return { deviceType: isMobile ? 'mobile' : 'pc', browser }
-}
 
 export const useAnalyticsStore = defineStore('analytics', () => {
   const records = ref<VisitRecord[]>([])
@@ -88,14 +70,12 @@ export const useAnalyticsStore = defineStore('analytics', () => {
       saved = null
     }
     if (saved?.length) {
-      // 兼容旧数据：补齐缺失的 sessionId / deviceType / browser
+      // 兼容旧数据：补齐缺失的 sessionId
       records.value = saved.map((r) => ({
         toolId: r.toolId,
         ts: r.ts,
         duration: r.duration,
         sessionId: r.sessionId ?? 'legacy',
-        deviceType: r.deviceType === 'mobile' ? 'mobile' : 'pc',
-        browser: r.browser ?? '未知',
       }))
     }
     let sid = await getItem<string>(SESSION_KEY)
@@ -115,8 +95,7 @@ export const useAnalyticsStore = defineStore('analytics', () => {
     currentToolEnterTime.value = ts
     currentToolId.value = toolId
     currentRecordTs.value = ts
-    const env = detectEnvironment()
-    records.value.push({ toolId, ts, duration: 0, sessionId: sessionId.value, ...env })
+    records.value.push({ toolId, ts, duration: 0, sessionId: sessionId.value })
     persist()
     if (remoteEnabled.value) {
       void insertVisit({
@@ -124,8 +103,6 @@ export const useAnalyticsStore = defineStore('analytics', () => {
         tool_id: toolId,
         ts,
         duration: 0,
-        device_type: env.deviceType,
-        browser: env.browser,
       })
     }
   }
@@ -170,8 +147,6 @@ export const useAnalyticsStore = defineStore('analytics', () => {
       ts: r.ts,
       duration: r.duration,
       sessionId: r.session_id,
-      deviceType: r.device_type === 'mobile' ? 'mobile' : 'pc',
-      browser: r.browser ?? '未知',
     }))
   }
 
@@ -230,8 +205,6 @@ export const useAnalyticsStore = defineStore('analytics', () => {
           visitCount: 0,
           toolsUsed: [],
           toolCount: 0,
-          deviceTypes: [],
-          browsers: [],
           totalDuration: 0,
           firstVisit: r.ts,
           lastVisit: 0,
@@ -244,12 +217,6 @@ export const useAnalyticsStore = defineStore('analytics', () => {
       v.lastVisit = Math.max(v.lastVisit, r.ts)
       if (!v.toolsUsed.includes(r.toolId)) {
         v.toolsUsed.push(r.toolId)
-      }
-      if (!v.deviceTypes.includes(r.deviceType)) {
-        v.deviceTypes.push(r.deviceType)
-      }
-      if (r.browser && !v.browsers.includes(r.browser)) {
-        v.browsers.push(r.browser)
       }
     }
     return [...map.values()]

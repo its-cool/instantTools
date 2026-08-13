@@ -10,14 +10,8 @@ CREATE TABLE IF NOT EXISTS public.visits (
   tool_id TEXT NOT NULL,
   ts BIGINT NOT NULL,
   duration BIGINT NOT NULL DEFAULT 0,
-  device_type TEXT,
-  browser TEXT,
   created_at TIMESTAMPTZ DEFAULT now()
 );
-
--- 1.1 若你已执行过旧版建表（无 device_type/browser 列），先执行下面的迁移语句
--- ALTER TABLE public.visits ADD COLUMN IF NOT EXISTS device_type TEXT;
--- ALTER TABLE public.visits ADD COLUMN IF NOT EXISTS browser TEXT;
 
 -- 2. 创建索引加速查询（按时间、工具、访客聚合）
 CREATE INDEX IF NOT EXISTS idx_visits_ts ON public.visits (ts DESC);

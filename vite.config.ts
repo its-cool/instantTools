@@ -1,13 +1,27 @@
-import { createRequire } from 'node:module'
 import { fileURLToPath, URL } from 'node:url'
-import { defineConfig } from 'vite'
+import { copyFileSync, existsSync } from 'node:fs'
+import { resolve, join } from 'node:path'
+import { defineConfig, type Plugin } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
 import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
 
-const require = createRequire(import.meta.url)
-const monacoEditorPlugin = require('vite-plugin-monaco-editor')
+// GitHub Pages 不支持 SPA 深链接（如 /instantTools/control），
+// 构建后复制 index.html 为 404.html 做 fallback，让子路径路由可直达。
+function spa404Fallback(): Plugin {
+  return {
+    name: 'spa-404-fallback',
+    apply: 'build',
+    closeBundle() {
+      const dist = resolve(process.cwd(), 'dist')
+      const index = join(dist, 'index.html')
+      if (existsSync(index)) {
+        copyFileSync(index, join(dist, '404.html'))
+      }
+    },
+  }
+}
 
 export default defineConfig({
   base: process.env.BASE_URL || '/',
@@ -21,7 +35,7 @@ export default defineConfig({
       resolvers: [ElementPlusResolver()],
       dts: 'src/components.d.ts',
     }),
-    monacoEditorPlugin.default({}),
+    spa404Fallback(),
   ],
   resolve: {
     alias: {
