@@ -59,8 +59,8 @@ function createDiffEditor() {
   })
 
   diffEditor.value.onDidUpdateDiff(() => {
-    const changes = diffEditor.value?.getModel()?.diff?.changes ?? []
-    diffCount.value = changes.length
+    const changes = diffEditor.value?.getLineChanges()?.length ?? 0
+    diffCount.value = changes
   })
 }
 

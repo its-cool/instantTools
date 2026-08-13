@@ -7,6 +7,7 @@ import '@/tools'
 import App from './App.vue'
 import router from './router'
 import { useAppStore } from '@/stores/app'
+import { useAnalyticsStore } from '@/stores/analytics'
 import './style.css'
 
 const app = createApp(App)
@@ -18,5 +19,8 @@ app.use(ElementPlus)
 
 const appStore = useAppStore()
 void appStore.init()
+
+const analyticsStore = useAnalyticsStore()
+void analyticsStore.init()
 
 app.mount('#app')
