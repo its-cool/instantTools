@@ -5,10 +5,12 @@ import {
   Brush,
   DataAnalysis,
   Document,
+  EditPen,
   Expand,
   Fold,
   Grid,
   HomeFilled,
+  Location,
   Moon,
   Picture,
   Sunny,
@@ -30,6 +32,8 @@ const categoryIcons: Record<string, typeof Grid> = {
   color: Brush,
   formatter: Document,
   barcode: DataAnalysis,
+  coordinate: Location,
+  text: EditPen,
 }
 
 const categories = computed(() => getCategories())
@@ -55,33 +59,22 @@ function onToggleTheme(event: MouseEvent) {
         </span>
       </div>
 
-      <el-menu
-        :default-active="activeMenu"
-        :collapse="appStore.sidebarCollapsed"
-        router
-        class="app-layout__menu"
-      >
+      <el-menu :default-active="activeMenu" :collapse="appStore.sidebarCollapsed" router class="app-layout__menu">
         <el-menu-item index="/">
-          <el-icon><HomeFilled /></el-icon>
+          <el-icon>
+            <HomeFilled />
+          </el-icon>
           <template #title>首页</template>
         </el-menu-item>
 
-        <el-sub-menu
-          v-for="category in categories"
-          :key="category"
-          :index="category"
-        >
+        <el-sub-menu v-for="category in categories" :key="category" :index="category">
           <template #title>
             <el-icon>
               <component :is="categoryIcons[category] ?? Grid" />
             </el-icon>
             <span>{{ CATEGORY_LABELS[category] ?? category }}</span>
           </template>
-          <el-menu-item
-            v-for="tool in getToolsByCategory(category)"
-            :key="tool.id"
-            :index="tool.route"
-          >
+          <el-menu-item v-for="tool in getToolsByCategory(category)" :key="tool.id" :index="tool.route">
             {{ tool.name }}
           </el-menu-item>
         </el-sub-menu>

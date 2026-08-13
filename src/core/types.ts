@@ -19,4 +19,5 @@ export const CATEGORY_LABELS: Record<string, string> = {
   formatter: '格式转换',
   barcode: '条码生成',
   coordinate: '坐标工具',
+  text: '文本工具',
 }

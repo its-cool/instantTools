@@ -32,3 +32,14 @@ registerTool({
   component: () => import('./ColorPickerTool.vue'),
   keywords: ['调色', '对比度', 'wcag', 'hsl'],
 })
+
+registerTool({
+  id: 'color-theme',
+  name: 'Web 主题配色',
+  description: '输入基础色生成 Element Plus / Tailwind / Material 等多套主题方案',
+  category: 'color',
+  icon: 'Brush',
+  route: '/color/theme',
+  component: () => import('./ColorTheme.vue'),
+  keywords: ['主题', 'theme', '配色', 'element', 'tailwind', 'material', 'ant', 'bootstrap', 'css变量'],
+})
