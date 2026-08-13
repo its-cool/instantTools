@@ -26,14 +26,17 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        run: npm ci
+        # Windows 生成的 package-lock.json 缺少 Linux 平台的原生可选依赖，
+        # 直接 npm ci 会报 @rollup/rollup-linux-x64-gnu 缺失（npm/cli#4828）。
+        # 删除 lockfile 后 npm install 会在 Linux 上重新解析并安装正确的平台包。
+        run: |
+          rm -f package-lock.json
+          npm install --no-audit --no-fund
 
       - name: Build
         run: npm run build
         env:
           BASE_URL: /instantTools/
-          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
 
       - uses: actions/upload-pages-artifact@v3
         with:
