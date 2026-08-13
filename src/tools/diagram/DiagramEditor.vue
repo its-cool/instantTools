@@ -11,6 +11,7 @@ import { importJson } from './utils/export'
 import { getDiagramTemplate } from './templates'
 import type { DiagramType } from './types'
 import { getStorageKey } from './types'
+import { centerGraph, fitGraph } from './hooks/useGraph'
 import {
   addMindmapChild,
   addMindmapList,
@@ -21,7 +22,10 @@ import {
   restoreMindmap,
   unbindMindmapGraph,
 } from './mindmap'
+import { registerSequenceShapes } from './templates/sequence'
+import { registerUsecaseShapes } from './templates/usecase'
 import { getItem, setItem } from '@/shared/utils/storage'
+import { applyGraphTheme, observeThemeChange } from './utils/themeColors'
 
 const route = useRoute()
 const containerRef = ref<HTMLElement>()
@@ -41,6 +45,7 @@ const template = computed(() => getDiagramTemplate(diagramType.value))
 const isMindmap = computed(() => diagramType.value === 'mindmap')
 
 let saveTimer: ReturnType<typeof setTimeout> | null = null
+let disposeThemeObserver: (() => void) | null = null
 
 async function loadDraft() {
   const saved = await getItem<object>(getStorageKey(diagramType.value))
@@ -52,6 +57,7 @@ async function loadDraft() {
       }
       return true
     } catch {
+      await setItem(getStorageKey(diagramType.value), null)
       return false
     }
   }
@@ -96,6 +102,10 @@ function initGraph() {
 
   graphRef.value = graph
   bindGraphEvents(graph)
+  applyGraphTheme(graph)
+
+  if (diagramType.value === 'sequence') registerSequenceShapes()
+  if (diagramType.value === 'usecase') registerUsecaseShapes()
 
   if (isMindmap.value) {
     setupMindmapMode(graph)
@@ -104,9 +114,28 @@ function initGraph() {
   void loadDraft().then((loaded) => {
     if (!loaded) {
       graph.clearCells()
-      template.value.initGraph(graph)
+      try {
+        template.value.initGraph(graph)
+      } catch (e) {
+        console.error('initGraph error', e)
+      }
     }
+    setTimeout(() => {
+      try {
+        fitGraph(graph)
+      } catch {
+        centerGraph(graph)
+      }
+    }, 100)
   })
+
+  if (!disposeThemeObserver) {
+    disposeThemeObserver = observeThemeChange(() => {
+      if (graphRef.value) {
+        applyGraphTheme(graphRef.value)
+      }
+    })
+  }
 }
 
 function getTargetNode() {
@@ -203,6 +232,7 @@ watch(diagramType, () => {
 
 onBeforeUnmount(() => {
   if (saveTimer) clearTimeout(saveTimer)
+  if (disposeThemeObserver) disposeThemeObserver()
   if (graphRef.value) unbindMindmapGraph(graphRef.value)
   graphRef.value?.dispose()
 })
@@ -278,7 +308,6 @@ onBeforeUnmount(() => {
 .diagram-editor__canvas {
   width: 100%;
   height: 100%;
-  background: var(--el-fill-color-blank);
 
   :deep(.x6-node) {
     &.has-tool-editing {

@@ -11,13 +11,8 @@ body,
   padding: 0;
   height: 100%;
   font-family:
-    -apple-system,
-    BlinkMacSystemFont,
-    'Segoe UI',
-    Roboto,
-    'Helvetica Neue',
-    Arial,
-    sans-serif;
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, sans-serif;
 }
 
 body {
@@ -116,4 +111,57 @@ html.theme-transition--shrink::view-transition-new(root) {
 .tool-page__content {
   flex: 1;
   min-height: 0;
+}
+
+/* ==================== 画布图形主题变量 ==================== */
+:root {
+  --diagram-primary: #5f95ff;
+  --diagram-primary-dark: #1f6feb;
+  --diagram-primary-bg: #eff4ff;
+  --diagram-stroke: #d9d9d9;
+  --diagram-stroke-soft: #aaa;
+  --diagram-lifeline: #aaa;
+  --diagram-text: #262626;
+  --diagram-text-soft: #595959;
+  --diagram-text-inverse: #fff;
+  --diagram-edge: #555;
+  --diagram-edge-dash: #888;
+  --diagram-note-fill: #fffbe6;
+  --diagram-note-stroke: #faad14;
+  --diagram-fragment-fill: rgba(255, 255, 255, 0.85);
+  --diagram-usecase-fill: #fff7e6;
+  --diagram-usecase-stroke: #fa8c16;
+  --diagram-boundary-stroke: #bbb;
+  --diagram-boundary-fill: rgba(250, 250, 250, 0.5);
+  --diagram-activation-fill: #eff4ff;
+  --diagram-activation-stroke: #5f95ff;
+  --diagram-actor-stroke: #333;
+  --diagram-bg: #fff;
+  --diagram-grid: #e5e5e5;
+}
+
+html.dark {
+  --diagram-primary: #5f95ff;
+  --diagram-primary-dark: #1f6feb;
+  --diagram-primary-bg: #1a2a4a;
+  --diagram-stroke: #4c4c52;
+  --diagram-stroke-soft: #5a5d65;
+  --diagram-lifeline: #6a6d75;
+  --diagram-text: #e8e8ea;
+  --diagram-text-soft: #a0a0a6;
+  --diagram-text-inverse: #fff;
+  --diagram-edge: #b0b3ba;
+  --diagram-edge-dash: #7a7d85;
+  --diagram-note-fill: #3d3a28;
+  --diagram-note-stroke: #d4a025;
+  --diagram-fragment-fill: rgba(40, 40, 45, 0.9);
+  --diagram-usecase-fill: #3d3524;
+  --diagram-usecase-stroke: #fa8c16;
+  --diagram-boundary-stroke: #5a5d65;
+  --diagram-boundary-fill: rgba(50, 50, 55, 0.4);
+  --diagram-activation-fill: #1a2a4a;
+  --diagram-activation-stroke: #4f8efc;
+  --diagram-actor-stroke: #c5c8cf;
+  --diagram-bg: #1e1e1f;
+  --diagram-grid: #3a3a3c;
 }

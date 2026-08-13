@@ -1,169 +1,170 @@
 import { Graph } from '@antv/x6'
 import type { DiagramTemplate } from '../types'
 
-Graph.registerNode('actor', {
-  inherit: 'rect',
-  width: 60,
-  height: 80,
-  markup: [
-    { tagName: 'circle', selector: 'head' },
-    { tagName: 'rect', selector: 'body' },
-    { tagName: 'line', selector: 'leg-l' },
-    { tagName: 'line', selector: 'leg-r' },
-    { tagName: 'text', selector: 'label' },
-  ],
-  attrs: {
-    head: {
-      cx: 30,
-      cy: 16,
-      r: 12,
-      fill: 'none',
-      stroke: '#333',
-      strokeWidth: 2,
-    },
-    body: {
-      x: 18,
-      y: 28,
-      width: 24,
-      height: 32,
-      fill: 'none',
-      stroke: '#333',
-      strokeWidth: 2,
-    },
-    'leg-l': { x1: 22, y1: 60, x2: 12, y2: 78, stroke: '#333', strokeWidth: 2 },
-    'leg-r': { x1: 38, y1: 60, x2: 48, y2: 78, stroke: '#333', strokeWidth: 2 },
-    label: {
-      refX: '50%',
-      refY: '100%',
-      refY2: 8,
-      textAnchor: 'middle',
-      fontSize: 13,
-      fill: '#333',
-    },
-  },
-})
+const COLORS = {
+  primary: '#5f95ff',
+  primaryBg: '#eff4ff',
+  stroke: '#d9d9d9',
+  actorStroke: '#555',
+  text: '#262626',
+  textSoft: '#595959',
+  edge: '#555',
+  edgeDash: '#888',
+  noteFill: '#fffbe6',
+  noteStroke: '#faad14',
+  systemFill: '#eff4ff',
+  systemStroke: '#5f95ff',
+}
 
-Graph.registerNode('usecase', {
-  inherit: 'ellipse',
-  width: 120,
-  height: 60,
-  attrs: {
-    body: {
-      fill: '#FFF7E6',
-      stroke: '#FA8C16',
-      strokeWidth: 2,
+export function registerUsecaseShapes() {
+  Graph.registerNode(
+    'uc-actor',
+    {
+      inherit: 'circle',
+      width: 30,
+      height: 30,
+      attrs: {
+        body: { fill: '#fff', stroke: COLORS.actorStroke, strokeWidth: 1.5 },
+        label: {
+          text: '参与者',
+          fontSize: 12,
+          fill: COLORS.text,
+          refY: '50%',
+          refY2: 22,
+          textVerticalAnchor: 'middle',
+          textAnchor: 'middle',
+        },
+      },
     },
-    label: {
-      fontSize: 13,
-      fill: '#333',
-    },
-  },
-})
+    true,
+  )
 
-Graph.registerNode('system-boundary', {
-  inherit: 'rect',
-  attrs: {
-    body: {
-      fill: 'transparent',
-      stroke: '#999',
-      strokeWidth: 1,
-      strokeDasharray: '8 4',
+  Graph.registerNode(
+    'uc-usecase',
+    {
+      inherit: 'ellipse',
+      width: 120,
+      height: 50,
+      attrs: {
+        body: { fill: '#fff', stroke: COLORS.primary, strokeWidth: 1.5 },
+        label: { fontSize: 12, fill: COLORS.text },
+      },
     },
-    label: {
-      refX: 12,
-      refY: 16,
-      textAnchor: 'start',
-      fontSize: 14,
-      fill: '#666',
+    true,
+  )
+
+  Graph.registerNode(
+    'uc-system',
+    {
+      inherit: 'rect',
+      width: 360,
+      height: 240,
+      attrs: {
+        body: {
+          fill: COLORS.systemFill,
+          stroke: COLORS.systemStroke,
+          strokeWidth: 1.5,
+          rx: 6,
+          ry: 6,
+        },
+        label: { text: '系统边界', fontSize: 13, fill: COLORS.textSoft, refX: 12, refY: 12, textAnchor: 'start' },
+      },
     },
-  },
-})
+    true,
+  )
+
+  Graph.registerNode(
+    'uc-note',
+    {
+      inherit: 'rect',
+      width: 120,
+      height: 60,
+      attrs: {
+        body: { fill: COLORS.noteFill, stroke: COLORS.noteStroke, strokeWidth: 1 },
+        label: { fontSize: 12, fill: COLORS.textSoft },
+      },
+    },
+    true,
+  )
+}
 
 export const usecaseTemplate: DiagramTemplate = {
   type: 'usecase',
   label: '用例图',
   shapes: [
-    { id: 'actor', label: '参与者', type: 'actor', width: 60, height: 80 },
-    { id: 'usecase', label: '用例', type: 'usecase', width: 120, height: 60 },
-    { id: 'system-boundary', label: '系统边界', type: 'system-boundary', width: 400, height: 300 },
+    { id: 'uc-actor', label: '参与者', type: 'uc-actor', width: 30, height: 30 },
+    { id: 'uc-usecase', label: '用例', type: 'uc-usecase', width: 120, height: 50 },
+    { id: 'uc-system', label: '系统边界', type: 'uc-system', width: 360, height: 240 },
+    { id: 'uc-note', label: '注释', type: 'uc-note', width: 120, height: 60 },
+    { id: 'include-rel', label: '«include»', type: 'include-rel', kind: 'edge' },
+    { id: 'extend-rel', label: '«extend»', type: 'extend-rel', kind: 'edge' },
+    { id: 'generalization', label: '泛化', type: 'generalization', kind: 'edge' },
   ],
   initGraph(graph) {
-    graph.addNode({
-      shape: 'system-boundary',
-      x: 180,
-      y: 60,
-      width: 420,
-      height: 320,
-      label: '系统',
-    })
+    graph.addNode({ shape: 'uc-actor', x: 70, y: 135, label: '用户' })
+    graph.addNode({ shape: 'uc-actor', x: 555, y: 135, label: '管理员' })
 
     graph.addNode({
-      shape: 'actor',
-      x: 80,
-      y: 160,
-      label: '用户',
+      shape: 'uc-system',
+      x: 160,
+      y: 40,
+      width: 340,
+      height: 280,
+      label: '用户管理系统',
     })
 
-    graph.addNode({
-      shape: 'usecase',
-      x: 280,
-      y: 120,
-      label: '登录',
-    })
-
-    graph.addNode({
-      shape: 'usecase',
-      x: 280,
-      y: 220,
-      label: '查看数据',
-    })
+    graph.addNode({ shape: 'uc-usecase', x: 270, y: 90, label: '登录' })
+    graph.addNode({ shape: 'uc-usecase', x: 270, y: 160, label: '查看个人信息' })
+    graph.addNode({ shape: 'uc-usecase', x: 270, y: 230, label: '修改密码' })
+    graph.addNode({ shape: 'uc-usecase', x: 400, y: 260, label: '用户管理' })
 
     graph.addEdge({
-      source: { x: 140, y: 200 },
-      target: { x: 280, y: 150 },
-      attrs: {
-        line: { stroke: '#666', strokeWidth: 1.5, targetMarker: null },
-      },
+      source: { x: 100, y: 150 },
+      target: { x: 270, y: 115 },
+      attrs: { line: { stroke: COLORS.edge, strokeWidth: 1.5, targetMarker: null } },
     })
-
     graph.addEdge({
-      source: { x: 140, y: 200 },
-      target: { x: 280, y: 250 },
-      attrs: {
-        line: { stroke: '#666', strokeWidth: 1.5, targetMarker: null },
-      },
+      source: { x: 100, y: 150 },
+      target: { x: 270, y: 185 },
+      attrs: { line: { stroke: COLORS.edge, strokeWidth: 1.5, targetMarker: null } },
     })
-
     graph.addEdge({
-      source: { x: 340, y: 180 },
-      target: { x: 340, y: 220 },
-      labels: [{ attrs: { label: { text: '<<include>>' } } }],
+      source: { x: 585, y: 150 },
+      target: { x: 460, y: 285 },
+      attrs: { line: { stroke: COLORS.edge, strokeWidth: 1.5, targetMarker: null } },
+    })
+    graph.addEdge({
+      source: { x: 390, y: 255 },
+      target: { x: 330, y: 200 },
       attrs: {
         line: {
-          stroke: '#999',
+          stroke: COLORS.edgeDash,
           strokeWidth: 1,
           strokeDasharray: '4 2',
           targetMarker: { name: 'classic', size: 6 },
         },
       },
+      labels: [{ attrs: { label: { text: '«extend»', fontSize: 11, fill: COLORS.textSoft } } }],
     })
   },
 }
 
-export function addActor(graph: Graph) {
-  graph.addNode({
-    shape: 'actor',
-    x: 100,
-    y: 200,
-    label: '参与者',
-  })
+export function addUsecaseActor(graph: Graph) {
+  graph.addNode({ shape: 'uc-actor', x: 80, y: 100, label: '参与者' })
 }
 
-export function addUseCase(graph: Graph) {
-  graph.addNode({
-    shape: 'usecase',
-    x: 300,
-    y: 200,
-    label: '用例',
-  })
+export function addUsecase(graph: Graph) {
+  graph.addNode({ shape: 'uc-usecase', x: 200, y: 120, label: '用例' })
 }
+
+export function addSystemBoundary(graph: Graph) {
+  graph.addNode({ shape: 'uc-system', x: 180, y: 80, label: '系统边界' })
+}
+
+export function addUsecaseNote(graph: Graph) {
+  graph.addNode({ shape: 'uc-note', x: 250, y: 200, label: '注释' })
+}
+
+export const addUcActor = addUsecaseActor
+export const addUcUsecase = addUsecase
+export const addUcNote = addUsecaseNote

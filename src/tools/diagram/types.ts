@@ -16,8 +16,9 @@ export interface ShapeDefinition {
   width?: number
   height?: number
   attrs?: Record<string, unknown>
+  kind?: 'node' | 'edge'
 }
 
 export function getStorageKey(type: DiagramType) {
-  return `diagram-draft-${type}`
+  return `diagram-draft-${type}-v6`
 }

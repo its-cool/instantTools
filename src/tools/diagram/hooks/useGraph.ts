@@ -27,9 +27,12 @@ export function createGraphInstance(options: UseGraphOptions): Graph {
   const graph = new X6Graph({
     container,
     autoResize: true,
+    background: { color: '#ffffff' },
     grid: {
       size: 10,
       visible: true,
+      type: 'dot',
+      args: { color: '#e5e5e5', thickness: 1 },
     },
     panning: {
       enabled: true,
@@ -53,7 +56,7 @@ export function createGraphInstance(options: UseGraphOptions): Graph {
         return new Shape.Edge({
           attrs: {
             line: {
-              stroke: '#5F95FF',
+              stroke: '#5f95ff',
               strokeWidth: 2,
               targetMarker: { name: 'block', width: 10, height: 6 },
             },
