@@ -22,6 +22,7 @@ export type BuiltinSystem =
   | 'CGCS2000_GK3' | 'CGCS2000_GK6'
   | 'BJ54_GK3' | 'BJ54_GK6'
   | 'XA80_GK3' | 'XA80_GK6'
+  | 'EPSG4549'
 
 /** 自定义坐标系标识（前缀区分） */
 export type CustomSystem = `CUSTOM:${string}`
@@ -106,7 +107,8 @@ export const COORD_SYSTEMS: CoordSystemMeta[] = [
   { value: 'GCJ02MERCATOR', code: 'GCJ-02-M', label: 'GCJ-02 Web墨卡托', desc: '高德投影坐标系（基于GCJ-02的Web墨卡托）', unit: 'metre', area: '中国', type: 'proj', engine: 'gcoord', group: 'projection' },
   { value: 'BD09MC', code: 'BD-09-MC', label: 'BD-09 墨卡托', desc: '百度墨卡托投影坐标（BD09MC）', unit: 'metre', area: '中国', type: 'proj', engine: 'gcoord', group: 'projection' },
   // --- CGCS2000 高斯-克吕格 ---
-  { value: 'CGCS2000_GK3', code: 'CGCS2000/GK3', label: 'CGCS2000 / 3°带', desc: 'CGCS2000 高斯-克吕格3度带投影', unit: 'metre', area: '中国', type: 'proj', engine: 'proj4', group: 'projection' },
+  { value: 'CGCS2000_GK3', code: 'CGCS2000/GK3', label: 'CGCS2000 / 3°带', desc: 'CGCS2000 高斯-克吕格3度带投影（含带号）', unit: 'metre', area: '中国', type: 'proj', engine: 'proj4', group: 'projection' },
+  { value: 'EPSG4549', code: 'EPSG:4549', label: 'CGCS2000 / 3°带 120°E', desc: 'CGCS2000 3度带高斯投影，中央子午线120°，东坐标不含带号', unit: 'metre', area: '中国 118°30′E–121°30′E', type: 'proj', engine: 'proj4', group: 'projection' },
   { value: 'CGCS2000_GK6', code: 'CGCS2000/GK6', label: 'CGCS2000 / 6°带', desc: 'CGCS2000 高斯-克吕格6度带投影', unit: 'metre', area: '中国', type: 'proj', engine: 'proj4', group: 'projection' },
   // --- 北京54 高斯-克吕格 ---
   { value: 'BJ54_GK3', code: 'BJ54/GK3', label: '北京54 / 3°带', desc: '北京54 高斯-克吕格3度带投影', unit: 'metre', area: '中国', type: 'proj', engine: 'proj4', group: 'projection' },
@@ -140,6 +142,8 @@ const PROJ4_DEFS: Record<string, string> = {
   XA80: '+proj=longlat +a=6378140 +rf=298.257 +no_defs +type=crs',
   EPSG3857:
     '+proj=merc +a=6378137 +b=6378137 +lat_ts=0 +lon_0=0 +x_0=0 +y_0=0 +k=1 +units=m +nadgrids=@null +wktext +no_defs +type=crs',
+  EPSG4549:
+    '+proj=tmerc +lat_0=0 +lon_0=120 +k=1 +x_0=500000 +y_0=0 +ellps=GRS80 +units=m +no_defs +type=crs',
 }
 
 // 注册静态投影
@@ -311,6 +315,11 @@ function toWgs84(x: number, y: number, from: CoordSystem): [number, number] {
     return [lng, lat]
   }
 
+  // EPSG:4549（CGCS2000 3度带，中央子午线120°，东坐标不含带号）
+  if (from === 'EPSG4549') {
+    return proj4('EPSG4549', 'WGS84', [x, y]) as [number, number]
+  }
+
   // 高斯-克吕格投影（CGCS2000 / 北京54 / 西安80）
   const gk = parseGK(from)
   if (gk) {
@@ -377,6 +386,11 @@ function fromWgs84(lng: number, lat: number, to: CoordSystem): [number, number] 
   if (to === 'GCJ02MERCATOR') {
     const [gcjLng, gcjLat] = gcoord.transform([lng, lat], gcoord.WGS84, gcoord.GCJ02)
     return proj4('WGS84', 'EPSG3857', [gcjLng, gcjLat]) as [number, number]
+  }
+
+  // EPSG:4549（CGCS2000 3度带，中央子午线120°，东坐标不含带号）
+  if (to === 'EPSG4549') {
+    return proj4('WGS84', 'EPSG4549', [lng, lat]) as [number, number]
   }
 
   // 高斯-克吕格投影
